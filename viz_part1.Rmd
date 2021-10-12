@@ -88,11 +88,38 @@ weather_df %>%
 ```
 
 
+Let's make another scatterplot
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = date, y = tmax, size = prcp))+ ## size of plot depends on precipitation
+  geom_point(alpha = .3)+
+  facet_grid(. ~ name)+
+  geom_smooth(se=FALSE) ## se:standard error bar
+
+```
+
+Let's use data manipulation as part of this
+
+```{r}
+weather_df %>% 
+  filter(name == "CentralPark_NY") %>% 
+  mutate(
+    tmax = tmax*(9/5)+32,
+    tmin = tmin*(9/5)+32
+  ) %>% 
+  ggplot(aes(x = tmin, y = tmax))+
+  geom_point()
+```
 
 
+## Stacking geoms
 
-
-
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax))+
+  geom_bin_2d()
+```
 
 
 
