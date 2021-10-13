@@ -18,7 +18,12 @@ library(tidyverse)
 
 ``` r
 library(patchwork)
+library(viridis)
+```
 
+    ## Loading required package: viridisLite
+
+``` r
 knitr::opts_chunk$set(
   fig.width = 6,
   fig.asp =.6,
@@ -83,3 +88,102 @@ weather_df %>%
     ## Warning: Removed 15 rows containing missing values (geom_point).
 
 <img src="viz_part2_files/figure-gfm/unnamed-chunk-3-1.png" width="90%" />
+
+## Scales
+
+``` r
+weather_df %>% 
+  ggplot(aes(x = tmin, y= tmax, color = name))+
+  geom_point(alpha = .5)+
+  labs(
+    title = "Temperation plot",
+    x = "Minimun daily temperation",
+    y = "Maximum daily temperation",
+    caption = "Data from rnoaa pachkage; temperation in 2017"
+    )+
+  scale_x_continuous(
+    breaks = c(-15,0,15),
+    labels = c("-15 C","0","15 C")
+  )+scale_y_continuous(
+    trans = "log"   ###y = sqrt/log(y)
+    #position = "right"
+  )
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous y-axis
+
+    ## Warning: Removed 90 rows containing missing values (geom_point).
+
+<img src="viz_part2_files/figure-gfm/unnamed-chunk-4-1.png" width="90%" />
+
+## COLOR scales
+
+``` r
+weather_df %>% 
+  ggplot(aes(x = tmin, y= tmax, color = name))+
+  geom_point(alpha = .5)+
+  labs(
+    title = "Temperation plot",
+    x = "Minimun daily temperation",
+    y = "Maximum daily temperation",
+    caption = "Data from rnoaa pachkage; temperation in 2017"
+  )+
+  scale_color_hue(
+    name = "Location",
+    h = c(100,300)  #hue: color, tune of color
+  )    
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_part2_files/figure-gfm/unnamed-chunk-5-1.png" width="90%" />
+
+``` r
+weather_df %>% 
+  ggplot(aes(x = tmin, y= tmax, color = name))+
+  geom_point(alpha = .5)+
+  labs(
+    title = "Temperation plot",
+    x = "Minimun daily temperation",
+    y = "Maximum daily temperation",
+    caption = "Data from rnoaa pachkage; temperation in 2017"
+  )+
+  scale_color_viridis(
+     name = "Location",
+    discrete = TRUE  #defalt is continuous for vridis
+  )
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_part2_files/figure-gfm/unnamed-chunk-6-1.png" width="90%" />
+
+## Themes
+
+``` r
+weather_df %>% 
+  ggplot(aes(x = tmin, y= tmax, color = name))+
+  geom_point(alpha = .5)+
+  labs(
+    title = "Temperation plot",
+    x = "Minimun daily temperation",
+    y = "Maximum daily temperation",
+    caption = "Data from rnoaa pachkage; temperation in 2017"
+  )+
+  scale_color_viridis(
+     name = "Location",
+    discrete = TRUE)+  #defalt is continuous for vridis
+  theme_bw()+  
+  ## ggthemes::theme_economist_white()+   # this package provides more themes
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_part2_files/figure-gfm/unnamed-chunk-7-1.png" width="90%" />
+
+``` r
+  ## Order matters for THEME!!
+```

@@ -7,6 +7,7 @@ output: github_document
 ```{r}
 library(tidyverse)
 library(patchwork)
+library(viridis)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -51,19 +52,96 @@ weather_df %>%
 ```
 
 
+## Scales
+
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y= tmax, color = name))+
+  geom_point(alpha = .5)+
+  labs(
+    title = "Temperation plot",
+    x = "Minimun daily temperation",
+    y = "Maximum daily temperation",
+    caption = "Data from rnoaa pachkage; temperation in 2017"
+    )+
+  scale_x_continuous(
+    breaks = c(-15,0,15),
+    labels = c("-15 C","0","15 C")
+  )+scale_y_continuous(
+    trans = "log"   ###y = sqrt/log(y)
+    #position = "right"
+  )
+```
+
+
+## COLOR scales
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y= tmax, color = name))+
+  geom_point(alpha = .5)+
+  labs(
+    title = "Temperation plot",
+    x = "Minimun daily temperation",
+    y = "Maximum daily temperation",
+    caption = "Data from rnoaa pachkage; temperation in 2017"
+  )+
+  scale_color_hue(
+    name = "Location",
+    h = c(100,300)  #hue: color, tune of color
+  )    
+
+
+
+
+```
 
 
 
 
 
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y= tmax, color = name))+
+  geom_point(alpha = .5)+
+  labs(
+    title = "Temperation plot",
+    x = "Minimun daily temperation",
+    y = "Maximum daily temperation",
+    caption = "Data from rnoaa pachkage; temperation in 2017"
+  )+
+  scale_color_viridis(
+     name = "Location",
+    discrete = TRUE  #defalt is continuous for vridis
+  )
 
 
+```
 
 
+## Themes
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y= tmax, color = name))+
+  geom_point(alpha = .5)+
+  labs(
+    title = "Temperation plot",
+    x = "Minimun daily temperation",
+    y = "Maximum daily temperation",
+    caption = "Data from rnoaa pachkage; temperation in 2017"
+  )+
+  scale_color_viridis(
+     name = "Location",
+    discrete = TRUE)+  #defalt is continuous for vridis
+  theme_bw()+  
+  ## ggthemes::theme_economist_white()+   # this package provides more themes
+  theme(legend.position = "bottom")
+  ## Order matters for THEME!!
 
 
-
-
+```
 
 
 
