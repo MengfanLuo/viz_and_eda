@@ -112,6 +112,92 @@ weather_df %>%
 ```
 
 
+## grouped `mutate`
+
+```{r}
+weather_df %>% 
+  mutate(
+    mean_tmax = mean(tmax,na.rm = TRUE)
+  )
+
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    mean_tmax = mean(tmax,na.rm = TRUE),
+    centered_tmax = tmax - mean_tmax
+  ) %>% 
+  ggplot(aes(x = date, y = centered_tmax,color = name))+
+  geom_point()
+  
+
+```
+
+The second add a column mean of `tmax` after group by name. Then it will calculate the mean with each 3 groups, rather than the mean of tmax for the whole data.
+
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    tmax_rank = min_rank(tmax) ## rank from min to max
+  ) %>% 
+  filter(tmax_rank<2)
+
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    tmax_rank = min_rank(desc(tmax)) ## rank from max to min
+  ) %>% 
+  filter(tmax_rank<2)
+```
+
+
+Lagged variables
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    lagged_tmax = lag(tmax,n=1),
+    tmax_diff = tmax - lagged_tmax
+  ) %>% 
+  summarize(
+    diff_sd = sd(tmax_diff,na.rm = TRUE)
+  )
+```
+
+
+## LImitations
+
+
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  summarize(cor_tmin_tmax = cor(tmin,tmax,use = "complete"))
+
+weather_df %>% 
+  filter(name == "CentralPark_NY" )%>% 
+           lm(tmax ~ tmin,data = .)
+```
+
+However, in this case `group_by()` does not work.
+
+```{r, eval=FALSE}
+weather_df %>% 
+  group_by(name) %>% 
+  summarize(lm = lm(tmax ~ tmin))
+```
+
+
+
+
+
+
+
+
+
+
 
 
 

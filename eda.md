@@ -211,3 +211,139 @@ weather_df %>%
 | CentralPark\_NY |    365 |  17.366301 |
 | Waikiki\_HA     |    365 |  29.657735 |
 | Waterhole\_WA   |    365 |   7.482192 |
+
+## grouped `mutate`
+
+``` r
+weather_df %>% 
+  mutate(
+    mean_tmax = mean(tmax,na.rm = TRUE)
+  )
+```
+
+    ## # A tibble: 1,095 x 8
+    ##    name           id          date        prcp  tmax  tmin month      mean_tmax
+    ##    <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>         <dbl>
+    ##  1 CentralPark_NY USW00094728 2017-01-01     0   8.9   4.4 2017-01-01      18.1
+    ##  2 CentralPark_NY USW00094728 2017-01-02    53   5     2.8 2017-01-01      18.1
+    ##  3 CentralPark_NY USW00094728 2017-01-03   147   6.1   3.9 2017-01-01      18.1
+    ##  4 CentralPark_NY USW00094728 2017-01-04     0  11.1   1.1 2017-01-01      18.1
+    ##  5 CentralPark_NY USW00094728 2017-01-05     0   1.1  -2.7 2017-01-01      18.1
+    ##  6 CentralPark_NY USW00094728 2017-01-06    13   0.6  -3.8 2017-01-01      18.1
+    ##  7 CentralPark_NY USW00094728 2017-01-07    81  -3.2  -6.6 2017-01-01      18.1
+    ##  8 CentralPark_NY USW00094728 2017-01-08     0  -3.8  -8.8 2017-01-01      18.1
+    ##  9 CentralPark_NY USW00094728 2017-01-09     0  -4.9  -9.9 2017-01-01      18.1
+    ## 10 CentralPark_NY USW00094728 2017-01-10     0   7.8  -6   2017-01-01      18.1
+    ## # ... with 1,085 more rows
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    mean_tmax = mean(tmax,na.rm = TRUE),
+    centered_tmax = tmax - mean_tmax
+  ) %>% 
+  ggplot(aes(x = date, y = centered_tmax,color = name))+
+  geom_point()
+```
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="eda_files/figure-gfm/unnamed-chunk-10-1.png" width="90%" />
+
+The second add a column mean of `tmax` after group by name. Then it will
+calculate the mean with each 3 groups, rather than the mean of tmax for
+the whole data.
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    tmax_rank = min_rank(tmax) ## rank from min to max
+  ) %>% 
+  filter(tmax_rank<2)
+```
+
+    ## # A tibble: 3 x 8
+    ## # Groups:   name [3]
+    ##   name           id          date        prcp  tmax  tmin month      tmax_rank
+    ##   <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>         <int>
+    ## 1 CentralPark_NY USW00094728 2017-12-28     0  -7.7 -11.6 2017-12-01         1
+    ## 2 Waikiki_HA     USC00519397 2017-12-21    18  21.7  18.3 2017-12-01         1
+    ## 3 Waterhole_WA   USS0023B17S 2017-01-02    25 -10.5 -12.4 2017-01-01         1
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    tmax_rank = min_rank(desc(tmax)) ## rank from max to min
+  ) %>% 
+  filter(tmax_rank<2)
+```
+
+    ## # A tibble: 4 x 8
+    ## # Groups:   name [3]
+    ##   name           id          date        prcp  tmax  tmin month      tmax_rank
+    ##   <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>         <int>
+    ## 1 CentralPark_NY USW00094728 2017-06-13     0  34.4  25   2017-06-01         1
+    ## 2 CentralPark_NY USW00094728 2017-07-20     3  34.4  25   2017-07-01         1
+    ## 3 Waikiki_HA     USC00519397 2017-07-12     0  33.3  24.4 2017-07-01         1
+    ## 4 Waterhole_WA   USS0023B17S 2017-08-03     0  26.4  13.3 2017-08-01         1
+
+Lagged variables
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    lagged_tmax = lag(tmax,n=1),
+    tmax_diff = tmax - lagged_tmax
+  ) %>% 
+  summarize(
+    diff_sd = sd(tmax_diff,na.rm = TRUE)
+  )
+```
+
+    ## # A tibble: 3 x 2
+    ##   name           diff_sd
+    ##   <chr>            <dbl>
+    ## 1 CentralPark_NY    4.45
+    ## 2 Waikiki_HA        1.23
+    ## 3 Waterhole_WA      3.13
+
+## LImitations
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  summarize(cor_tmin_tmax = cor(tmin,tmax,use = "complete"))
+```
+
+    ## # A tibble: 3 x 2
+    ##   name           cor_tmin_tmax
+    ##   <chr>                  <dbl>
+    ## 1 CentralPark_NY         0.955
+    ## 2 Waikiki_HA             0.638
+    ## 3 Waterhole_WA           0.939
+
+``` r
+weather_df %>% 
+  filter(name == "CentralPark_NY" )%>% 
+           lm(tmax ~ tmin,data = .)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = tmax ~ tmin, data = .)
+    ## 
+    ## Coefficients:
+    ## (Intercept)         tmin  
+    ##       7.209        1.039
+
+However, in this case `group_by()` does not work.
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  summarize(lm = lm(tmax ~ tmin))
+```
