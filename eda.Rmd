@@ -38,4 +38,88 @@ weather_df =
 ```
 
 
+`group_by`
+
+```{r}
+weather_df %>% 
+  group_by(name,month)
+```
+
+## count some things
+
+```{r}
+weather_df %>% 
+  group_by(name,month) %>% 
+  summarize(n_obs = n())
+
+```
+
+↑ This is good for doing follow-up analysis, because this gives a pivot-wider format table. Compare with following chunk ↓:
+
+```{r}
+weather_df %>% 
+  janitor::tabyl(month,name)
+```
+
+↑ This gives a table that may be good for results presentation
+
+
+Yet, don't use this!! (similar to the function of above `tably`)
+```{r}
+weather_df %>% 
+  pull(name) %>% 
+  table()
+```
+
+
+```{r}
+weather_df %>% 
+  janitor::tabyl(month,name)
+```
+
+## MOre general summaries
+
+Let's count, take means, look at SDs
+
+```{r}
+weather_df %>% 
+  # drop_na() %>% 
+  group_by(name,month) %>% 
+  summarize(
+    n_obs = n(),
+    mean_tmax = mean(tmax,na.rm = TRUE),
+    median_tmax = median(tmax, na.rm = TRUE),
+    sd_tman = sd(tmax, na.rm = TRUE)
+  ) %>% 
+  ggplot(aes(x = month,y = mean_tmax, color = name))+
+  geom_point()+
+  geom_line()
+  
+```
+
+
+Formatting table
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  summarize(
+    n_obs = n(),
+    mean_tmax = mean(tmax,na.rm = TRUE)
+  ) %>% 
+  knitr::kable()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
 

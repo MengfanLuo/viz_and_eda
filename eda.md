@@ -66,3 +66,148 @@ weather_df =
     ## date created (size, mb): 2021-10-12 10:27:54 (0.914)
 
     ## file min/max dates: 1999-09-01 / 2021-10-31
+
+`group_by`
+
+``` r
+weather_df %>% 
+  group_by(name,month)
+```
+
+    ## # A tibble: 1,095 x 7
+    ## # Groups:   name, month [36]
+    ##    name           id          date        prcp  tmax  tmin month     
+    ##    <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>    
+    ##  1 CentralPark_NY USW00094728 2017-01-01     0   8.9   4.4 2017-01-01
+    ##  2 CentralPark_NY USW00094728 2017-01-02    53   5     2.8 2017-01-01
+    ##  3 CentralPark_NY USW00094728 2017-01-03   147   6.1   3.9 2017-01-01
+    ##  4 CentralPark_NY USW00094728 2017-01-04     0  11.1   1.1 2017-01-01
+    ##  5 CentralPark_NY USW00094728 2017-01-05     0   1.1  -2.7 2017-01-01
+    ##  6 CentralPark_NY USW00094728 2017-01-06    13   0.6  -3.8 2017-01-01
+    ##  7 CentralPark_NY USW00094728 2017-01-07    81  -3.2  -6.6 2017-01-01
+    ##  8 CentralPark_NY USW00094728 2017-01-08     0  -3.8  -8.8 2017-01-01
+    ##  9 CentralPark_NY USW00094728 2017-01-09     0  -4.9  -9.9 2017-01-01
+    ## 10 CentralPark_NY USW00094728 2017-01-10     0   7.8  -6   2017-01-01
+    ## # ... with 1,085 more rows
+
+## count some things
+
+``` r
+weather_df %>% 
+  group_by(name,month) %>% 
+  summarize(n_obs = n())
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the `.groups` argument.
+
+    ## # A tibble: 36 x 3
+    ## # Groups:   name [3]
+    ##    name           month      n_obs
+    ##    <chr>          <date>     <int>
+    ##  1 CentralPark_NY 2017-01-01    31
+    ##  2 CentralPark_NY 2017-02-01    28
+    ##  3 CentralPark_NY 2017-03-01    31
+    ##  4 CentralPark_NY 2017-04-01    30
+    ##  5 CentralPark_NY 2017-05-01    31
+    ##  6 CentralPark_NY 2017-06-01    30
+    ##  7 CentralPark_NY 2017-07-01    31
+    ##  8 CentralPark_NY 2017-08-01    31
+    ##  9 CentralPark_NY 2017-09-01    30
+    ## 10 CentralPark_NY 2017-10-01    31
+    ## # ... with 26 more rows
+
+↑ This is good for doing follow-up analysis, because this gives a
+pivot-wider format table. Compare with following chunk ↓:
+
+``` r
+weather_df %>% 
+  janitor::tabyl(month,name)
+```
+
+    ##       month CentralPark_NY Waikiki_HA Waterhole_WA
+    ##  2017-01-01             31         31           31
+    ##  2017-02-01             28         28           28
+    ##  2017-03-01             31         31           31
+    ##  2017-04-01             30         30           30
+    ##  2017-05-01             31         31           31
+    ##  2017-06-01             30         30           30
+    ##  2017-07-01             31         31           31
+    ##  2017-08-01             31         31           31
+    ##  2017-09-01             30         30           30
+    ##  2017-10-01             31         31           31
+    ##  2017-11-01             30         30           30
+    ##  2017-12-01             31         31           31
+
+↑ This gives a table that may be good for results presentation
+
+Yet, don’t use this!! (similar to the function of above `tably`)
+
+``` r
+weather_df %>% 
+  pull(name) %>% 
+  table()
+```
+
+    ## .
+    ## CentralPark_NY     Waikiki_HA   Waterhole_WA 
+    ##            365            365            365
+
+``` r
+weather_df %>% 
+  janitor::tabyl(month,name)
+```
+
+    ##       month CentralPark_NY Waikiki_HA Waterhole_WA
+    ##  2017-01-01             31         31           31
+    ##  2017-02-01             28         28           28
+    ##  2017-03-01             31         31           31
+    ##  2017-04-01             30         30           30
+    ##  2017-05-01             31         31           31
+    ##  2017-06-01             30         30           30
+    ##  2017-07-01             31         31           31
+    ##  2017-08-01             31         31           31
+    ##  2017-09-01             30         30           30
+    ##  2017-10-01             31         31           31
+    ##  2017-11-01             30         30           30
+    ##  2017-12-01             31         31           31
+
+## MOre general summaries
+
+Let’s count, take means, look at SDs
+
+``` r
+weather_df %>% 
+  # drop_na() %>% 
+  group_by(name,month) %>% 
+  summarize(
+    n_obs = n(),
+    mean_tmax = mean(tmax,na.rm = TRUE),
+    median_tmax = median(tmax, na.rm = TRUE),
+    sd_tman = sd(tmax, na.rm = TRUE)
+  ) %>% 
+  ggplot(aes(x = month,y = mean_tmax, color = name))+
+  geom_point()+
+  geom_line()
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the `.groups` argument.
+
+<img src="eda_files/figure-gfm/unnamed-chunk-8-1.png" width="90%" />
+
+Formatting table
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  summarize(
+    n_obs = n(),
+    mean_tmax = mean(tmax,na.rm = TRUE)
+  ) %>% 
+  knitr::kable()
+```
+
+| name            | n\_obs | mean\_tmax |
+|:----------------|-------:|-----------:|
+| CentralPark\_NY |    365 |  17.366301 |
+| Waikiki\_HA     |    365 |  29.657735 |
+| Waterhole\_WA   |    365 |   7.482192 |
