@@ -149,10 +149,14 @@ weather_df %>%
 
 ``` r
 weather_df %>% 
+  mutate(prcp = case_when(
+    prcp < 50 ~ "less",
+    prcp >= 50 ~ "more"
+  )) %>% 
   ggplot(aes(x = tmin, y = tmax, color = name)) +
   geom_point(alpha = .3)+  # alpha:transparency 
   geom_smooth(se = FALSE)+ #add smooth lines
-  facet_grid(. ~ name) # row ~ column, here the . stands for all rows
+  facet_grid(name ~ prcp) # row ~ column, here the . stands for all rows
 ```
 
     ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
@@ -226,7 +230,8 @@ weather_df %>%
 ``` r
 weather_df %>% 
   ggplot(aes(x=tmax,fill = name))+
-  geom_density(alpha = .3)
+  geom_density(alpha = .3)+
+  facet_grid(name~.)
 ```
 
     ## Warning: Removed 3 rows containing non-finite values (stat_density).
@@ -275,6 +280,19 @@ weather_df %>%
 ## scale is to make the vertical space between each other larger
 ```
 
+which is the same as:
+
+``` r
+weather_df %>% 
+  ggplot(aes(x=tmax,fill = name))+
+  geom_density(alpha = .3)+
+  facet_grid(name~.)
+```
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_density).
+
+<img src="viz_part1_files/figure-gfm/unnamed-chunk-15-1.png" width="90%" />
+
 ``` r
 weather_df %>% 
   ggplot(aes(x = tmin,y = tmax,color = name))+
@@ -283,7 +301,7 @@ weather_df %>%
 
     ## Warning: Removed 15 rows containing missing values (geom_point).
 
-<img src="viz_part1_files/figure-gfm/unnamed-chunk-15-1.png" width="90%" />
+<img src="viz_part1_files/figure-gfm/unnamed-chunk-16-1.png" width="90%" />
 
 ``` r
 ## scale is to make the vertical space between each other larger
@@ -297,7 +315,7 @@ weather_df %>%
 
     ## Warning: Removed 15 rows containing missing values (geom_point).
 
-<img src="viz_part1_files/figure-gfm/unnamed-chunk-16-1.png" width="90%" />
+<img src="viz_part1_files/figure-gfm/unnamed-chunk-17-1.png" width="90%" />
 
 ``` r
 ## scale is to make the vertical space between each other larger

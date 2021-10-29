@@ -1,0 +1,249 @@
+---
+title: "P8105 Homework 2"
+author: Mengfan Luo (ml4701)
+output: github_document
+---
+
+```{r, echo=FALSE,message=FALSE}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+```
+
+### Problem 1
+
+Let's load the Mr. Trash Wheel sheet as `mtw_df` and clean it:
+
+```{r}
+mtw_df = 
+  read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+             sheet = "Mr. Trash Wheel",range = "A2:N534") %>% 
+  drop_na() %>% 
+  janitor::clean_names() %>% 
+  mutate(sports_balls = round(sports_balls)) 
+
+```
+
+Let's take a look at the first and last 3 lines of `mtw_df`.
+
+```{r}
+knitr::kable(head(mtw_df,3))
+knitr::kable(tail(mtw_df,3))
+```
+
+
+Let's load and clean precipitation data for 2018 and 2019, and then combine them into one dataframe `prec_2018_2019_df`.
+
+```{r}
+prec_2018_df = 
+  read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+             sheet = "2018 Precipitation",range = "A2:B14") %>% 
+  janitor::clean_names() %>% 
+  mutate(year = 2018)
+
+prec_2019_df = 
+  read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+             sheet = "2019 Precipitation",range = "A2:B14") %>% 
+  janitor::clean_names() %>% 
+  mutate(year = 2019)
+
+prec_2018_2019_df = 
+  bind_rows(prec_2018_df,prec_2019_df) %>% 
+  mutate(month = month.name[month])
+
+```
+
+
+Let's take a look at the first and last 3 lines of `prec_2018_2019_df`.
+
+```{r}
+knitr::kable(head(prec_2018_2019_df,3))
+knitr::kable(tail(prec_2018_2019_df,3))
+```
+
+ 
+For `mtw_df` which is tidied from Mr. Trash Wheel sheet, there are ``r nrow(mtw_df)`` observations and ``r ncol(mtw_df)`` variables (including serial number of the dumpster `dumpster`). Other variables are ``r names(mtw_df)[-1]``.
+
+For `prec_2018_2019_df` which is combined from cleaned precipitation data for 2018 and 2019, there are there are ``r nrow(prec_2018_2019_df)`` observations and ``r ncol(prec_2018_2019_df)`` variables, inclusing ``r names(prec_2018_2019_df)``. We can calculate from this dataframe that the total precipitation in 2018 was ``r sum(pull(prec_2018_2019_df,total)[1:12])``, and the median number of sports balls in a dumpster in 2019 was ``r median(pull(prec_2018_2019_df,total)[13:24])``.
+ 
+ 
+### Problem 2
+
+1. Clean and tidy the data in pols-month.csv. First 6 lines of the dataframe will be shown. 
+
+```{r,message=FALSE}
+pols_df = read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>% 
+  separate(mon,into = c("year","month","day"),sep = "-") %>% 
+  mutate(year = as.numeric(year)) %>% 
+  mutate(month = as.numeric(month)) %>% 
+  mutate(month = month.name[month]) %>% 
+  pivot_longer(cols = starts_with("prez"),names_to = "president",
+               names_prefix = "prez_",values_to = "prez_value") %>% 
+  filter(prez_value==1) %>% 
+  select(-day,-prez_value) 
+
+knitr::kable(head(pols_df))
+```
+
+
+2. Clean, tidy and organize the data in snp.csv. First 6 lines of the dataframe will be shown. 
+
+```{r,message=FALSE}
+snp_df = read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
+  mutate(date = mdy(date)) %>% 
+  separate(date,into = c("year","month","day"),sep = "-") %>% 
+  select(-day) %>% 
+  mutate(year = as.numeric(year)) %>% 
+  mutate(year = ifelse(year > 2049,year -100,year)) %>% 
+  arrange(year,month) %>% 
+  mutate(month = as.numeric(month)) %>% 
+  mutate(month = month.name[month])
+knitr::kable(head(snp_df))
+```
+
+
+
+3. Tidy the unemployment data so that it can be merged with the previous datasets. First 6 lines of the dataframe will be shown. 
+
+
+```{r,message=FALSE}
+unemploy_df = read_csv("data/fivethirtyeight_datasets/unemployment.csv") 
+colnames(unemploy_df)=c("year","1","2","3","4","5","6","7","8","9","10","11","12")
+
+unemploy_df =
+  pivot_longer(unemploy_df,`1`:`12`,
+               names_to = "month",values_to = "unemploy_percent") %>% 
+  mutate(month = as.numeric(month)) %>% 
+  mutate(month = month.name[month])
+knitr::kable(head(unemploy_df))
+```
+
+
+4. Join the datasets by merging snp into pols, and merging unemployment into the result. First and last 6 rows of the resulted dataframe `merge3_df` are shown below.
+
+```{r}
+merge2_df = left_join(pols_df,snp_df,by = c("year","month"))
+merge3_df = left_join(merge2_df,unemploy_df,by = c("year","month"))
+knitr::kable(head(merge3_df))
+knitr::kable(tail(merge3_df))
+```
+
+
+In this problem, 3 dataframe was tidied and merged together.
+
+Dataframe 1 `pols_df` has ``r nrow(pols_df)`` rows and ``r ncol(pols_df)`` columns. The variables in the dataframe are ``r names(pols_df)``.
+
+Dataframe 2 `snp_df` has ``r nrow(snp_df)`` rows and ``r ncol(snp_df)`` columns. The variables in the dataframe are ``r names(snp_df)``.
+
+Dataframe 3 `unemploy_df` has ``r nrow(unemploy_df)`` rows and ``r ncol(unemploy_df)`` columns. The variables in the dataframe are ``r names(unemploy_df)``.
+
+The resulting dataset `merge3_df` is merged by the three above dataset according to the same year and month. It has ``r nrow(merge3_df)`` rows and ``r ncol(merge3_df)`` columns. The variables in the dataframe are ``r names(merge3_df)``. The range of years of the merged table is 
+``r range(pull(merge3_df,year))[2]-range(pull(merge3_df,year))[1]`` years,from ``r range(pull(merge3_df,year))[1]`` to ``r range(pull(merge3_df,year))[2]``.
+
+
+### Problem 3
+
+Load dataset as `babyname_df` and clean column names
+
+```{r}
+babyname_df = read_csv("data/Popular_Baby_Names.csv") %>% 
+  janitor::clean_names()
+
+```
+
+Looking into the values of the dataset, we found the ethnicity may have some inconsistent value imput. For example, `BLACK NON HISPANIC` and `BLACK NON HISP` obviously stand for the same ethnicity, while have two different imput value.
+
+```{r}
+unique(pull(babyname_df,ethnicity))
+```
+
+Here we try to make the values for `ethnicity` consistent.
+
+```{r}
+ethnicity_list = pull(babyname_df,ethnicity)
+n = length(ethnicity_list)
+
+
+for (i in 1:n ){
+  if (ethnicity_list[i] == "ASIAN AND PACI") {
+    ethnicity_list[i] = "ASIAN AND PACIFIC ISLANDER"
+  }else if (ethnicity_list[i] == "BLACK NON HISP") {
+    ethnicity_list[i] = "BLACK NON HISPANIC"
+  }else if (ethnicity_list[i] == "WHITE NON HISP") {
+    ethnicity_list[i] = "WHITE NON HISPANIC"
+  }
+}
+  
+babyname_df = mutate(babyname_df,ethnicity = ethnicity_list)
+
+unique(pull(babyname_df,ethnicity))
+```
+
+Also the `childs_first_name` are inconsistent in terms of cases. We make it consistent with an upper case first letter and lower case for the rest letters in one name.
+
+```{r}
+
+babyname_df = 
+  mutate(babyname_df,childs_first_name = str_to_lower(childs_first_name))%>%
+  mutate(childs_first_name = Hmisc::capitalize(childs_first_name))  
+  
+```
+
+Now, we have made the values in columns consistent. We then remove the duplicate rows.
+
+```{r}
+babyname_df = distinct(babyname_df)
+```
+
+``r n-nrow(babyname_df)`` duplicated rows are removed
+ 
+The following table shows **the rank in popularity of the name “Olivia” as a female baby name over year 2013-2016 for different ethnicities**.
+
+```{r}
+olivia_df = filter(babyname_df,childs_first_name == "Olivia") %>% 
+  arrange(year_of_birth) %>% 
+  select(-gender,-count,-childs_first_name) %>% 
+  pivot_wider(names_from = "year_of_birth",values_from = "rank")
+knitr::kable(olivia_df)
+```
+
+The following table shows **the most popular name among male children over year 2011-2016 for different ethnicities**.
+
+```{r}
+male_df = filter(babyname_df,gender == "MALE",rank == 1) %>% 
+  arrange(year_of_birth) %>% 
+  select(-gender,-count,-rank) %>% 
+  pivot_wider(names_from = "year_of_birth",values_from = "childs_first_name")
+knitr::kable(male_df)
+```
+
+
+Scatter plot showing the number of children with a name against the rank in popularity of that name, for male, white non-hispanic children born in 2016 are shown as belowed:
+
+
+```{r}
+male2016_df = filter(babyname_df,gender == "MALE",
+                     ethnicity == "WHITE NON HISPANIC",year_of_birth == 2016) %>%
+  select(childs_first_name,count,rank)
+ggplot(male2016_df,aes(x = rank, y = count))+ geom_point()+
+  labs(title = "Scatter plot of the number of children with a name against the rank of the name" ,
+  subtitle = "White non-hispanic children born in 2016",
+  x = "Rank in popularity of the name",
+  y = "Number of children with the name")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+

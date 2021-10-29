@@ -1,4 +1,4 @@
----
+ ---
 title: "ggplot2"
 output: github_document
 ---
@@ -69,8 +69,8 @@ weather_df %>%
     breaks = c(-15,0,15),
     labels = c("-15 C","0","15 C")
   )+scale_y_continuous(
-    trans = "log"   ###y = sqrt/log(y)
-    #position = "right"
+    trans = "sqrt",  ###y = sqrt/log(y)
+    position = "right"
   )
 ```
 
@@ -96,7 +96,6 @@ weather_df %>%
 
 
 ```
-
 
 
 
@@ -266,6 +265,7 @@ pup_litter %>%
   facet_grid(day_of_tx ~ event)
 
 ```
+
 
 
 
